@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace iutnc\Touiter\exception;
+namespace iutnc\touiteur\exception;
 
 class InvalidPropertyNameException extends \Exception
 {  

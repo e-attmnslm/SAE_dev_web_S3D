@@ -6,8 +6,9 @@ session_start();
 require_once 'vendor/autoload.php';
 
 use \iutnc\touiteur\dispatch\Dispatcher;
+use \iutnc\touiteur\action\DefaultAction;
 
-$app = (new Dispatcher());
+$app = (new Dispatcher())->addRoute('default', DefaultAction::class);
 try {
     echo $app->run();
 } catch (\Exception $e) {

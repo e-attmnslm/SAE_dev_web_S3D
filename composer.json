@@ -1,8 +1,11 @@
 {
+    "name": "s3/touiteur",
+    "description": "projet php deefy",
+    "type": "project",
+
     "autoload": {
         "psr-4": {
-
-            "iutnc\\Touiter\\": "src/classes"
+            "iutnc\\touiteur\\": "src/classes"
         }
     }
 }

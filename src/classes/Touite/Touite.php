@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+namespace iutnc\touiteur\Touite;
 class Touite {
     public string $auteur, $date, $tag, $img;
     public int $score;

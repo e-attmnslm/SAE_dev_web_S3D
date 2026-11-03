@@ -36,7 +36,7 @@ class Dispatcher {
                 <title>Touiteur.app</title>
             </head>
             <body>
-                <h1>Touiteur</h1>
+                <h1>Touiteurmabranche</h1>
 
                 <nav>
                     <a href="?action=default">Accueil</a> |

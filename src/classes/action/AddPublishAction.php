@@ -57,7 +57,7 @@ class AddPublishAction extends Action {
                 }
 
                 $_SESSION['liste'][] = [$nom_user, $publication];
-                $html .= "Publication postée avec succès avec nom d'utilisateur : $nom_user<br>Publication : $publication<br>";
+                $html .= "Publication postée avec succès avec nom d'utilisateur : $nom_user<br>Publication : $publication<br>Image : <br><img src=\"/SAE_dev_web_S3D/src/classes/action/image/$filename$extension\" style=\"max-height: 200px;max-width: 200px;\">";
             }
         }
         return $html;

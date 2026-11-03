@@ -1,11 +1,10 @@
 <?php
-// filepath: /home/jonathan/webs3/code/SAE_dev_web_S3D/src/classes/repository/TouiteRepository.php
 
 declare(strict_types=1);
 
 namespace iutnc\touiteur\repository;
 
-class TouiteRepository
+class TouiteurRepository
 {
     private string $file;
 
@@ -26,21 +25,27 @@ class TouiteRepository
         }
 
         try {
-            flock($handle, LOCK_SH);
+            if (!flock($handle, LOCK_SH)) {
+                throw new \RuntimeException('Impossible de verrouiller les touites.');
+            }
             $content = stream_get_contents($handle);
             $touites = json_decode($content ?: '[]', true, 512, JSON_THROW_ON_ERROR);
-            return is_array($touites) ? $touites : [];
+            if (!is_array($touites)) {
+                throw new \UnexpectedValueException('Le fichier des touites est invalide.');
+            }
+            return $touites;
         } finally {
             flock($handle, LOCK_UN);
             fclose($handle);
         }
     }
 
-    public function add(string $content): void
+    public function add(string $author, string $content, ?string $image = null): void
     {
+        $author = trim($author);
         $content = trim($content);
-        if ($content === '') {
-            throw new \InvalidArgumentException('Le touite ne peut pas être vide.');
+        if ($author === '' || $content === '') {
+            throw new \InvalidArgumentException('Le nom d’utilisateur et le touite sont obligatoires.');
         }
 
         $directory = dirname($this->file);
@@ -54,38 +59,32 @@ class TouiteRepository
         }
 
         try {
-            flock($handle, LOCK_EX);
+            if (!flock($handle, LOCK_EX)) {
+                throw new \RuntimeException('Impossible de verrouiller les touites.');
+            }
+
             rewind($handle);
             $existing = stream_get_contents($handle);
             $touites = json_decode($existing ?: '[]', true, 512, JSON_THROW_ON_ERROR);
+            if (!is_array($touites)) {
+                throw new \UnexpectedValueException('Le fichier des touites est invalide.');
+            }
 
             $touites[] = [
+                'author' => $author,
                 'content' => $content,
+                'image' => $image,
                 'created_at' => date(DATE_ATOM),
             ];
 
+            $json = json_encode($touites, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
             rewind($handle);
-            ftruncate($handle, 0);
-            fwrite($handle, json_encode($touites, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
-            fflush($handle);
+            if (!ftruncate($handle, 0) || fwrite($handle, $json) === false || !fflush($handle)) {
+                throw new \RuntimeException('Impossible d’enregistrer le touite.');
+            }
         } finally {
             flock($handle, LOCK_UN);
             fclose($handle);
         }
     }
 }
-
-// ...dans execute(), après le traitement du formulaire...
-$touite = trim($_POST['touite'] ?? '');
-(new TouiteRepository())->add($touite);
-
-// ...dans execute()...
-$touites = (new TouiteRepository())->all();
-$html = '';
-
-foreach (array_reverse($touites) as $touite) {
-    $content = htmlspecialchars($touite['content'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    $html .= "<article><p>{$content}</p></article>";
-}
-
-return $html;

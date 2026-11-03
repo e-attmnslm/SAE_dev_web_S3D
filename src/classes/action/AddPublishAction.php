@@ -3,64 +3,61 @@ declare(strict_types=1);
 
 namespace iutnc\touiteur\action;
 
+use iutnc\touiteur\repository\TouiteurRepository;
+
 class AddPublishAction extends Action {
 
-    // CREER 1 USER
-
     public function execute() : string {
-        $html = '<b>PUBLIER UN TOUITE</b> <br>';
         if ($this->http_method === 'GET') {
-            // afficher le formulaire
-            $html .= <<<FIN
+            return <<<HTML
+                <h2>Publier un touite</h2>
                 <form method="post" action="?action=publish-touite" enctype="multipart/form-data">
                     <input type="text" name="nom_user" required placeholder="Nom d'utilisateur">
                     <br><input type="text" name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235">
                     <br><input type="file" name="inputfile" accept="image/png, image/jpeg">(lier une image au Touite png/jpg, facultatif)
                     <br><button type="submit">Publier</button>
                 </form>
-            FIN;
-        } else {
-            // POST : traiter le formulaire
-            $nom_user = filter_var($_POST['nom_user'], FILTER_SANITIZE_SPECIAL_CHARS);
-            
-            $publication = filter_var($_POST['publication'], FILTER_SANITIZE_SPECIAL_CHARS);
-
-            if (isset($_FILES['inputfile']) && $_FILES['inputfile']['error'] !== UPLOAD_ERR_NO_FILE) {
-
-                if ($_FILES['inputfile']['error'] === UPLOAD_ERR_OK) {
-
-                $tmp = $_FILES['inputfile']['tmp_name'];
-                $type = $_FILES['inputfile']['type'];
-
-                if ($type === 'image/png' || $type === 'image/jpeg') {
-
-                    $upload_dir = __DIR__ . '/image/';
-                    $filename = uniqid();
-
-                    if ($type === 'image/png') {
-                        $extension = '.png';
-                    } else {
-                        $extension = '.jpg';
-                    }
-
-                    $dest = $upload_dir.$filename.$extension;
-
-                    if (move_uploaded_file($tmp, $dest)) {
-                        $html .= "Image enregistrée avec succès<br>";
-                    } else {
-                        $html .= "Impossible d'enregistrer l'image<br>";
-                    }
-
-                    } else {
-                        $html .= "Echec du téléchargement ou type non autorisé<br>";
-                    }
-                }
-
-                $_SESSION['liste'][] = [$nom_user, $publication, $filename];
-                $html .= "Publication postée avec succès avec nom d'utilisateur : $nom_user<br>Publication : $publication<br>Image : <br><img src=\"src/classes/action/image/$filename$extension\" style=\"max-height: 200px;max-width: 200px;\">";
-            }
+            HTML;
         }
-        return $html;
+
+        $author = trim((string) ($_POST['nom_user'] ?? ''));
+        $publication = trim((string) ($_POST['publication'] ?? ''));
+        if ($author === '' || $publication === '') {
+            return '<p>Le nom d’utilisateur et le texte du touite sont obligatoires.</p>';
+        }
+        if (mb_strlen($publication) < 10 || mb_strlen($publication) > 235) {
+            return '<p>Le texte doit contenir entre 10 et 235 caractères.</p>';
+        }
+
+        $imagePath = null;
+        $uploadedFile = $_FILES['inputfile'] ?? null;
+        if (is_array($uploadedFile) && ($uploadedFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            if (($uploadedFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                return '<p>Le téléchargement de l’image a échoué.</p>';
+            }
+
+            $temporaryPath = (string) ($uploadedFile['tmp_name'] ?? '');
+            $imageInfo = $temporaryPath !== '' ? getimagesize($temporaryPath) : false;
+            $mimeType = is_array($imageInfo) ? ($imageInfo['mime'] ?? '') : '';
+            $extensions = ['image/png' => '.png', 'image/jpeg' => '.jpg'];
+            if (!isset($extensions[$mimeType])) {
+                return '<p>Seules les images PNG et JPEG sont autorisées.</p>';
+            }
+
+            $uploadDirectory = __DIR__ . '/image';
+            if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0775, true) && !is_dir($uploadDirectory)) {
+                throw new \RuntimeException('Impossible de créer le dossier des images.');
+            }
+
+            $filename = bin2hex(random_bytes(16)) . $extensions[$mimeType];
+            if (!move_uploaded_file($temporaryPath, $uploadDirectory . '/' . $filename)) {
+                throw new \RuntimeException('Impossible d’enregistrer l’image.');
+            }
+            $imagePath = 'src/classes/action/image/' . $filename;
+        }
+
+        (new TouiteurRepository())->add($author, $publication, $imagePath);
+        header('Location: ?action=default');
+        return '';
     }
 }
-?>

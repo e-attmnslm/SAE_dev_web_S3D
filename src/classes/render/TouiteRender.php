@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+namespace iutnc\touiteur\render;
+use iutnc\touiteur\Touite;
 
 class TouiteRender{
 

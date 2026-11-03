@@ -21,6 +21,10 @@ class TouiteRender{
     }
 
     public function renderCompact() : string {
-        return "";
+        $v = $this->touite;
+        return " $v->auteur <br>
+                $v->texte <br>
+                $v->date <br>
+                $v->img";
     }
 }

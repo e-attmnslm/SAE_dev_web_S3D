@@ -35,8 +35,14 @@ class Dispatcher {
                 <meta charset="utf-8">
                 <title>Touiteur.app</title>
             </head>
-            <body>  
+            <body>
                 <h1>Touiteur</h1>
+
+                <nav>
+                    <a href="?action=default">Accueil</a> |
+                    <a href="?action=mur">Mur</a> |
+                    <a href="?action=publish-touite">Publier</a>
+                </nav>
 
                 <main>
                     {$html}

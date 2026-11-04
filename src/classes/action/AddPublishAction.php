@@ -13,7 +13,17 @@ class AddPublishAction extends Action {
                 <h2>Publier un touite</h2>
                 <form method="post" action="?action=publish-touite" enctype="multipart/form-data">
                     <input type="text" name="nom_user" required placeholder="Nom d'utilisateur">
-                    <br><input type="text" name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235">
+                    <!-- <br><input type="textarea" name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235"> -->
+                    <br><textarea class="autosize"rows="5" cols="40" name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235"></textarea>
+                    <style>
+                        .autosize {
+                            width: 15em;
+                            min-height: 5em;
+                            field-sizing: content;
+                            overflow: hidden;
+                            resize: none;
+                        }
+                    </style>
                     <br><input type="file" name="inputfile" accept="image/png, image/jpeg">(lier une image au Touite png/jpg, facultatif)
                     <br><button type="submit">Publier</button>
                 </form>

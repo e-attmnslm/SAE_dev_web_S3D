@@ -36,8 +36,7 @@ class Dispatcher {
                 <title>Touiteur.app</title>
             </head>
             <body>
-                <h1>Touiteur .Liste_touites</h1>
-
+                <h1>Touiteur .Touite en détails</h1>
                 <nav>
                     <a href="?action=default">Accueil</a> |
                     <a href="?action=mur">Mur</a> |

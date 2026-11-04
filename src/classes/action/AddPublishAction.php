@@ -10,7 +10,18 @@ class AddPublishAction extends Action {
     public function execute() : string {
         $html = '<b>PUBLIER UN TOUITE</b> <br>';
         if ($this->http_method === 'GET') {
-            // afficher le formulaire
+
+            // VERIFICATION (on regarde si la liste des touites est déjà créée)
+            if (isset($_SESSION['touites'])) {
+                $html .= $_SESSION['touites'];
+                unset($_SESSION['touites']);
+            }
+
+            // DEBUG
+            var_dump($_SESSION);
+            
+
+            // AFFICHER LE FORMULAIRE
             $html .= <<<FIN
                 <form method="post" action="?action=publish-touite" enctype="multipart/form-data">
                     <input type="text" name="nom_user" required placeholder="Nom d'utilisateur">
@@ -57,8 +68,56 @@ class AddPublishAction extends Action {
                 }
 
                 $_SESSION['liste'][] = [$nom_user, $publication, $filename];
-                $html .= "Publication postée avec succès avec nom d'utilisateur : $nom_user<br>Publication : $publication<br>Image : <br><img src=\"src/classes/action/image/$filename$extension\" style=\"max-height: 200px;max-width: 200px;\">";
+                $date = date('Y-m-d H:i:s');
+                $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>$nom_user</b><br>Publication : <b>$publication</b><br>Image : <br><img src=\"src/classes/action/image/$filename$extension\" style=\"max-height: 200px;max-width: 200px;\"><br>Date à laquelle vous avez posté : <b>$date</b></div>";
+
+            } else {
+                
+                $_SESSION['liste'][] = [$nom_user, $publication];
+                $date = date('Y-m-d H:i:s');
+                $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>$nom_user</b><br>Publication : <b>$publication</b><br>Date à laquelle vous avez posté : <b>$date</b></div>";
+
             }
+
+            $_SESSION['touites'] = $msg;
+
+            // GESTION DES TAGS
+            if (!isset($_SESSION['tags'])) {
+                $_SESSION['tags'] = [];
+            }
+
+            $z = 0;
+            while ($z < count($_SESSION['liste'])) {
+                if (str_contains($_SESSION['liste'][$z][1], '#')) {
+                    $tab = mb_str_split($_SESSION['liste'][$z][1]);
+                    $tab[] = ' ';
+                    $i = 0;
+                    while ($i < count($tab)-1) {
+                        if ($tab[$i] === '#') {
+                            $str = '';
+                            while (($tab[$i] != ' ') && ($i < count($tab))) {
+                                $str .= $tab[$i];
+                                $i++;
+                            }
+                            $j = 0;
+                            $verif = false;
+                            while ($j < count($_SESSION['tags'])) {
+                                if ($_SESSION['tags'][$j] === $str) {
+                                    $verif = true;
+                                }
+                                $j++;
+                            }
+                            if ($verif === false) {
+                                $_SESSION['tags'][] = $str;
+                            }
+                        }
+                        $i++;
+                    }
+                }
+                $z++;
+            }
+            header("Location: ?action=publish-touite");
+            exit();
         }
         return $html;
     }

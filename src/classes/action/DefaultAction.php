@@ -38,33 +38,28 @@ class DefaultAction extends Action {
             $content = nl2br(htmlspecialchars($displayContent, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
 
             if ($isExpanded) {
-                $html .= '<article id="touite-' . (int) $id . '" style="width:100%;max-width:300px;box-sizing:border-box;"><h3>' . $author . '</h3><p>' . $content . '</p>';
+                $html .= '<article style="width:100%;max-width:300px;box-sizing:border-box;"><h3>' . $author . '</h3><p>' . $content . '</p>';
                 if (!empty($touite['image'])) {
                     $image = htmlspecialchars((string) $touite['image'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
                     $html .= '<img src="' . $image . '" alt="Image du touite" style="display:block;width:100%;max-height:400px;height:auto;object-fit:contain;">';
                 }
             } else {
-                $html .= '<a href="?action=default&amp;id=' . (int) $id . '#touite-' . (int) $id . '" style="display:block;color:inherit;text-decoration:none;">'
-                    . '<article id="touite-' . (int) $id . '" style="width:100%;max-width:500px;box-sizing:border-box;"><h3>' . $author . '</h3><p>' . $content . '</p>';
+                $html .= '<a href="?action=default&amp;id=' . (int) $id . '" style="display:block;color:inherit;text-decoration:none;">'
+                    . '<article style="width:100%;max-width:500px;box-sizing:border-box;"><h3>' . $author . '</h3><p>' . $content . '</p>';
             }
 
             if (!empty($touite['created_at'])) {
                 $createdAt = (string) $touite['created_at'];
-                $date = new \DateTimeImmutable($createdAt);
-                $abbreviatedMonths = [
-                    1 => 'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
-                    'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
-                ];
-                $displayDate = $date->format('j') . ' '
-                    . $abbreviatedMonths[(int) $date->format('n')] . ' '
-                    . $date->format('Y H:i');
+                $displayDate = (new \DateTimeImmutable($createdAt))->format('d/m/y H:i');
                 $html .= '<p><time datetime="' . htmlspecialchars($createdAt, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">'
                     . htmlspecialchars($displayDate, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</time></p>';
             }
 
+            // c'est ici normalement !!
+
             $html .= '</article>';
             $html .= $isExpanded
-                ? '<p><a href="?action=default#touite-' . (int) $id . '">Réduire</a></p>'
+                ? '<p><a href="?action=default">Réduire</a></p>'
                 : '</a>';
         }
 

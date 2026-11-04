@@ -50,12 +50,17 @@ class DefaultAction extends Action {
 
             if (!empty($touite['created_at'])) {
                 $createdAt = (string) $touite['created_at'];
-                $displayDate = (new \DateTimeImmutable($createdAt))->format('d/m/y H:i');
+                $date = new \DateTimeImmutable($createdAt);
+                $abbreviatedMonths = [
+                    1 => 'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+                    'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
+                ];
+                $displayDate = $date->format('j') . ' '
+                    . $abbreviatedMonths[(int) $date->format('n')] . ' '
+                    . $date->format('Y H:i');
                 $html .= '<p><time datetime="' . htmlspecialchars($createdAt, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">'
                     . htmlspecialchars($displayDate, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</time></p>';
             }
-
-            // c'est ici normalement !!
 
             $html .= '</article>';
             $html .= $isExpanded

@@ -1,0 +1,34 @@
+<?php
+declare(strict_types=1);
+
+namespace iutnc\touiteur\action;
+
+class AddSignOutAction extends Action {
+
+    public function execute() : string {
+        $html = '<b>SE DÉCONNECTER</b> <br>';
+        if ($this->http_method === 'GET') {
+            // AFFICHER LE FORMULAIRE
+            $html .= <<<FIN
+                <form method="post" action="?action=signout" enctype="multipart/form-data">
+                    <p>Etes-vous sûr de vous déconnecter ?</p>
+                    <br><button type="submit">Se déconnecter</button>
+                </form>
+            FIN;
+        } else {
+
+            if (isset($_SESSION['statut'])) {
+                if ($_SESSION['statut']['loggedin'] === true) {
+                    unset($_SESSION['statut']);
+                    $_SESSION['statut']['loggedin'] = false;
+                    $html .= "Déconnecté avec succès";
+                }
+            }
+
+        }
+        return $html;
+    }
+    
+}
+
+?>

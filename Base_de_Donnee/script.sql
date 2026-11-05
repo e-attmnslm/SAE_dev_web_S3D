@@ -92,3 +92,131 @@ references touite(id_touite));
 alter table AppartientTag add ( foreign key
 (id_tag)
 references tags(id_tag));
+
+
+
+
+-------- A REVOIR--------
+--une liste de touites qu’il a publiée
+select t.id_touite, t.TEXTE from UTILISATEUR u 
+    inner join touite t on t.id_uti = u.ID_UTI 
+    Where u.id_uti = 1;
+
+--une liste de touites des utilisateurs suivis
+select t.id_touite, t.TEXTE from SUIVRE s 
+    inner join UTILISATEUR u on s.UTI_SUIVI = u.ID_UTI
+    inner join touite t on t.id_uti = u.ID_UTI
+    Where s.uti_suiveur = 1;
+
+--une liste de touites par tag donné
+select t.id_touite, t.TEXTE from APPARTIENTTAG ats
+    inner join touite t on t.ID_TOUITE = ats.ID_TOUITE
+    Where t.ID_UTI =1 and ats.id_tag = 2 ;
+-------- A REVOIR--------
+
+
+-- Mettre à jour le nombre de touites d’un utilisateur lorsqu’un touite est créé.
+
+CREATE OR REPLACE PROCEDURE updateTouite( uti number)
+    is
+    nbt number ;
+    begin
+
+    select count(*)as nombre_touite into nbt from UTILISATEUR u 
+        inner join touite t on t.id_uti = u.ID_UTI 
+        where u.id_uti= uti
+        group by u.id_uti;
+
+
+    update utilisateur set NBTOUITE= nbt where ID_UTI = uti;   
+    dbms_output.put_line(' le nouvveau nombre de touite l''utilisateur '|| uti ||  ':'
+    ||nbt);
+
+    exception
+    when NO_DATA_FOUND then
+    dbms_output.put_line('l''utilisateur n''existe pas : '
+    ||uti);
+    END updateTouite;
+
+
+
+
+--Un utilisateur ne peut pas se suivre lui-même ou suivre un utilisateur ayant le même email.
+
+CREATE OR REPLACE FUNCTION SuivreUti( suiveur number, suivi number) RETURN boolean
+    is
+    nbt number ;
+    mail_suiveur varchar(50);
+    mail_suivi varchar(50);
+    possible number;
+
+    begin
+    if suiveur = suivi then 
+        dbms_output.put_line('l''utilisateur ne pas se suivre lui meme');
+        return false;
+    end if;
+
+    select mail into mail_suiveur from utilisateur where ID_UTI = suiveur;
+    select mail into mail_suivi from utilisateur where ID_UTI = suivi;
+
+    if mail_suiveur = mail_suivi then 
+        dbms_output.put_line('l''utilisateur ne pas se suivre un utilisateur avec le meme mail');
+        return false;
+    end if;
+
+    select count(*) into possible from suivre where UTI_SUIVEUR=suiveur and uti_suivi= suivi;
+
+    if possible !=0 then 
+        dbms_output.put_line('il suit deja le l''utilisteur');
+        return false;
+    else 
+        insert into SUIVRE(UTI_SUIVEUR,UTI_SUIVI) values (suiveur,suivi);
+        dbms_output.put_line('il a bien pu suivre l''utilisateur');
+    end if;
+
+    return true;
+
+
+exception
+when NO_DATA_FOUND then
+dbms_output.put_line('un des utilisateur n''existe pas');
+
+END SuivreUti;
+
+
+
+
+
+--Empêcher la modification de l’auteur d’un touite : une fois publié, un touite conserve
+--son auteur initial. Il est interdit de transférer une publication à un autre utilisateur.
+
+CREATE OR REPLACE TRIGGER modif_auteur 
+    BEFORE update on touite 
+    for each row
+    begin 
+        if :new.id_uti!=:old.id_uti then 
+            Raise_application_error(-20001, 'l''auteur d''un touite ne peut pas etre modifier') ;
+        end if;
+    end;
+
+
+--Un utilisateur est limité à 50 touites par jour, pour éviter que des bots ne saturent la plateforme.
+
+CREATE OR REPLACE TRIGGER trg_limite_50_touites
+    BEFORE INSERT ON touite
+    FOR EACH ROW
+    DECLARE
+        v_compteur NUMBER;
+    BEGIN
+        -- 1. Compter les touites de l'utilisateur pour la journée en cours
+        SELECT COUNT(*) 
+        INTO v_compteur 
+        FROM touite 
+        WHERE id_uti = :new.id_uti 
+        AND TRUNC(date_public) =  TRUNC(SYSDATE);
+
+        -- 2. Si la limite de 50 est atteinte ou dépassée, on bloque
+        IF v_compteur >= 50 THEN
+            RAISE_APPLICATION_ERROR(-20002, ' Vous ne pouvez pas publier plus de 50 touites par jour.');
+        END IF;
+    END;

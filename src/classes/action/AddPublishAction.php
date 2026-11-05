@@ -5,16 +5,28 @@ namespace iutnc\touiteur\action;
 
 use iutnc\touiteur\repository\TouiteurRepository;
 
-class AddPublishAction extends Action {
-
-    public function execute() : string {
+class AddPublishAction extends Action
+{
+    public function execute(): string
+    {
+        $loggedIn = ($_SESSION['statut']['loggedin'] ?? false) === true;
         if ($this->http_method === 'GET') {
+            $authorField = $loggedIn
+                ? '<p>Publication en tant que <b>'
+                    . htmlspecialchars(
+                        trim((string) ($_SESSION['statut']['nom_user'] ?? '') . ' '
+                            . (string) ($_SESSION['statut']['prenom_user'] ?? '')),
+                        ENT_QUOTES | ENT_SUBSTITUTE,
+                        'UTF-8'
+                    )
+                    . '</b></p>'
+                : '<input type="text" name="nom_user" required placeholder="Nom d’utilisateur">';
+
             return <<<HTML
                 <h2>Publier un touite</h2>
                 <form method="post" action="?action=publish-touite" enctype="multipart/form-data">
-                    <input type="text" name="nom_user" required placeholder="Nom d'utilisateur">
-                    <!-- <br><input type="textarea" name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235"> -->
-                    <br><textarea class="autosize"rows="5" cols="40" name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235"></textarea>
+                    {$authorField}
+                    <br><textarea class="autosize" rows="5" cols="40" name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235"></textarea>
                     <style>
                         .autosize {
                             width: 15em;
@@ -30,10 +42,16 @@ class AddPublishAction extends Action {
             HTML;
         }
 
-        $author = trim((string) ($_POST['nom_user'] ?? ''));
+        $author = $loggedIn
+            ? trim((string) ($_SESSION['statut']['nom_user'] ?? '') . ' '
+                . (string) ($_SESSION['statut']['prenom_user'] ?? ''))
+            : trim((string) ($_POST['nom_user'] ?? ''));
         $publication = trim((string) ($_POST['publication'] ?? ''));
-        if ($author === '' || $publication === '') {
-            return '<p>Le nom d’utilisateur et le texte du touite sont obligatoires.</p>';
+        if ($author === '') {
+            return '<p>Le nom d’utilisateur est obligatoire.</p>';
+        }
+        if ($publication === '') {
+            return '<p>Le texte du touite est obligatoire.</p>';
         }
         if (mb_strlen($publication) < 10 || mb_strlen($publication) > 235) {
             return '<p>Le texte doit contenir entre 10 et 235 caractères.</p>';

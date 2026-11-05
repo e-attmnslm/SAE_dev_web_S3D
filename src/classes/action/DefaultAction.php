@@ -1,12 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace iutnc\touiteur\action;
 
 use iutnc\touiteur\repository\TouiteurRepository;
 
-class DefaultAction extends Action {
-
-    public function execute() : string {
+class DefaultAction extends Action
+{
+    public function execute(): string
+    {
         $touites = (new TouiteurRepository())->all();
         $selectedAuthor = isset($_GET['author']) && is_string($_GET['author'])
             ? trim($_GET['author'])
@@ -16,9 +18,10 @@ class DefaultAction extends Action {
         }
 
         if ($selectedAuthor !== null) {
-            $touites = array_filter($touites, static fn ($touite): bool =>
-                is_array($touite)
-                && (string) ($touite['author'] ?? 'Utilisateur') === $selectedAuthor
+            $touites = array_filter(
+                $touites,
+                static fn ($touite): bool => is_array($touite)
+                    && (string) ($touite['author'] ?? 'Utilisateur') === $selectedAuthor
             );
             $escapedAuthor = htmlspecialchars($selectedAuthor, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             $html = '<h2>Les touites de ' . $escapedAuthor . '</h2>'
@@ -48,8 +51,9 @@ class DefaultAction extends Action {
                 continue;
             }
 
-            $author = htmlspecialchars((string) ($touite['author'] ?? 'Utilisateur'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-            $authorQuery = rawurlencode((string) ($touite['author'] ?? 'Utilisateur'));
+            $rawAuthor = (string) ($touite['author'] ?? 'Utilisateur');
+            $author = htmlspecialchars($rawAuthor, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $authorQuery = rawurlencode($rawAuthor);
             $profileHref = '?action=default&amp;author=' . $authorQuery;
             $fullContent = (string) $touite['content'];
             $isExpanded = $selectedId === $id;
@@ -101,7 +105,4 @@ class DefaultAction extends Action {
 
         return $html;
     }
-    
 }
-
-?>

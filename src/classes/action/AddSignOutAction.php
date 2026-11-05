@@ -23,9 +23,9 @@ class AddSignOutAction extends Action {
         } else {
 
             if (isset($_SESSION['statut'])) {
-                if ($_SESSION['statut'][0] === true) {
+                if ($_SESSION['statut']['loggedin'] === true) {
                     unset($_SESSION['statut']);
-                    $_SESSION['statut'][0] = false;
+                    $_SESSION['statut']['loggedin'] = false;
                     $html .= "Déconnecté avec succès";
                 }
             }

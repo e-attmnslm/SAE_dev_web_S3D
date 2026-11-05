@@ -31,14 +31,14 @@ class Dispatcher {
     private function renderPage(string $html): void
     {
         if (isset($_SESSION['statut'])) {
-            if ($_SESSION['statut'][0] === true) {
+            if ($_SESSION['statut']['loggedin'] === true) {
                 $statut = " | <a href=\"?action=signout\">Déconnecter</a>";
                 $publier = " | <a href=\"?action=publish-touite\">Publier</a>";
             } else {
                 $statut = "";
                 $publier = "";
             }
-            if ($_SESSION['statut'][0] === false) {
+            if ($_SESSION['statut']['loggedin'] === false) {
                 $creer = "<a href=\"?action=signup\">Créer un compte</a> | ";
                 $connexion = "<a href=\"?action=login\">Connexion</a> |";
             } else {

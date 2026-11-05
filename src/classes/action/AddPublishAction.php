@@ -24,7 +24,7 @@ class AddPublishAction extends Action {
             // AFFICHER LE FORMULAIRE
             $html .= <<<FIN
                 <form method="post" action="?action=publish-touite" enctype="multipart/form-data">
-                    <p>Publication en tant que <b>{$_SESSION['statut'][1]}</b>
+                    <p>Publication en tant que <b>{$_SESSION['statut']['nom_user']} {$_SESSION['statut']['prenom_user']}</b>
                     <br><input type="text" autofocus name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235">
                     <br><input type="file" name="inputfile" accept="image/png, image/jpeg">(lier une image au Touite png/jpg, facultatif)
                     <br><button type="submit">Publier</button>
@@ -32,7 +32,7 @@ class AddPublishAction extends Action {
             FIN;
         } else {
             // POST : traiter le formulaire
-            $nom_user = filter_var($_POST['nom_user'], FILTER_SANITIZE_SPECIAL_CHARS);
+            //$nom_user = filter_var($_POST['nom_user'], FILTER_SANITIZE_SPECIAL_CHARS);
             
             $publication = filter_var($_POST['publication'], FILTER_SANITIZE_SPECIAL_CHARS);
 
@@ -67,13 +67,13 @@ class AddPublishAction extends Action {
                     }
                 }
 
-                $_SESSION['liste'][] = [$_SESSION['statut'][1], $publication, $filename];
+                $_SESSION['liste'][] = [$_SESSION['statut']['email_user'], $publication, $filename];
                 $date = date('Y-m-d H:i:s');
                 $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>{$_SESSION['statut'][1]}</b><br>Publication : <b>$publication</b><br>Image : <br><img src=\"src/classes/action/image/$filename$extension\" style=\"max-height: 200px;max-width: 200px;\"><br>Date à laquelle vous avez posté : <b>$date</b></div>";
 
             } else {
                 
-                $_SESSION['liste'][] = [$_SESSION['statut'][1], $publication];
+                $_SESSION['liste'][] = [$_SESSION['statut']['email_user'], $publication];
                 $date = date('Y-m-d H:i:s');
                 $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>{$_SESSION['statut'][1]}</b><br>Publication : <b>$publication</b><br>Date à laquelle vous avez posté : <b>$date</b></div>";
 

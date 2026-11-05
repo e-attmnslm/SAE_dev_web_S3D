@@ -16,23 +16,29 @@ class AddLoginAction extends Action {
             // AFFICHER LE FORMULAIRE
             $html .= <<<FIN
                 <form method="post" action="?action=login" enctype="multipart/form-data">
-                    <input type="text" name="nom_user" required placeholder="Nom d'utilisateur">
+                    <input type="email" name="email_user" required placeholder="Email">
                     <br><button type="submit">Se connecter</button>
                 </form>
             FIN;
         } else {
             // POST : traiter le formulaire
-            $nom_user = filter_var($_POST['nom_user'], FILTER_SANITIZE_SPECIAL_CHARS);
+            $email_user = filter_var($_POST['email_user'], FILTER_SANITIZE_SPECIAL_CHARS);
 
             $verif = false;
-            if ($_SESSION['statut'][0] === false) {
+            if ($_SESSION['statut']['loggedin'] === false) {
                 if (isset($_SESSION['compte'])) {
                     foreach ($_SESSION['compte'] as $key => $value) {
-                        if ($value === $nom_user) {
+                        if ($value['email_user'] === $email_user) {
+
                             $verif = true;
-                            $_SESSION['statut'][0] = true;
-                            $_SESSION['statut'][1] = $nom_user;
-                            $html .= "Connecté en tant que <b>$nom_user</b> avec succès";
+
+                            $_SESSION['statut']['loggedin'] = true;
+                            $_SESSION['statut']['nom_user'] = $_SESSION['compte'][$key]['nom_user'];
+                            $_SESSION['statut']['prenom_user'] = $_SESSION['compte'][$key]['prenom_user'];
+                            $_SESSION['statut']['email_user'] = $email_user;
+
+                            $html .= "Connexion au compte ayant pour email <b>$email_user</b> effectuée avec succès";
+                        
                         }
                     }
                 } else {
@@ -40,17 +46,17 @@ class AddLoginAction extends Action {
                 }
             } else {
                 $verif = true;
-                $html .= "<p>/!\ Erreur : Vous êtes déjà connecté en tant que <b>{$_SESSION['statut'][1]}</b> /!\</p>";
+                $html .= "<p>/!\ Erreur : Vous êtes déjà connecté en tant que <b>{$_SESSION['statut']['email_user']}</b> /!\</p>";
             }
 
             if ($verif === false) {
-                $html .= "<p>/!\ Erreur : Utilisateur <b>$nom_user</b> non existant /!\</p>";
+                $html .= "<p>/!\ Erreur : Utilisateur d'email <b>$email_user</b> non existant /!\</p>";
             }
 
         }
         return $html;
     }
-    
+
 }
 
 ?>

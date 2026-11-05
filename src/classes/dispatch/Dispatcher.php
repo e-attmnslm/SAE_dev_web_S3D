@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace iutnc\touiteur\dispatch;
 
+use \iutnc\touiteur\action\AddSignOutAction;
+
 class Dispatcher {
     protected ?string $action = null;
     protected $actions = [];
@@ -28,6 +30,22 @@ class Dispatcher {
 
     private function renderPage(string $html): void
     {
+        if (isset($_SESSION['statut'])) {
+            if ($_SESSION['statut'][0] === true) {
+                $statut = " | <a href=\"?action=signout\">Déconnecter</a>";
+                $publier = " | <a href=\"?action=publish-touite\">Publier</a>";
+            } else {
+                $statut = "";
+                $publier = "";
+            }
+            if ($_SESSION['statut'][0] === false) {
+                $creer = "<a href=\"?action=signup\">Créer un compte</a> | ";
+                $connexion = "<a href=\"?action=login\">Connexion</a> |";
+            } else {
+                $creer = "";
+                $connexion = "";
+            }
+        }
         echo <<<HTML
             <!doctype html>
             <html lang="fr">
@@ -39,9 +57,12 @@ class Dispatcher {
                 <h1>Touiteur</h1>
 
                 <nav>
+                    {$creer}
+                    {$connexion}
                     <a href="?action=default">Accueil</a> |
-                    <a href="?action=mur">Mur</a> |
-                    <a href="?action=publish-touite">Publier</a>
+                    <a href="?action=mur">Mur</a>
+                    {$publier}
+                    {$statut}
                 </nav>
 
                 <main>

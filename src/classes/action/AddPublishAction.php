@@ -19,13 +19,13 @@ class AddPublishAction extends Action {
 
             // DEBUG
             var_dump($_SESSION);
-            
+
 
             // AFFICHER LE FORMULAIRE
             $html .= <<<FIN
                 <form method="post" action="?action=publish-touite" enctype="multipart/form-data">
-                    <input type="text" name="nom_user" required placeholder="Nom d'utilisateur">
-                    <br><input type="text" name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235">
+                    <p>Publication en tant que <b>{$_SESSION['statut'][1]}</b>
+                    <br><input type="text" autofocus name="publication" required placeholder="Texte à publier" minlength="10" maxlength="235">
                     <br><input type="file" name="inputfile" accept="image/png, image/jpeg">(lier une image au Touite png/jpg, facultatif)
                     <br><button type="submit">Publier</button>
                 </form>
@@ -67,15 +67,15 @@ class AddPublishAction extends Action {
                     }
                 }
 
-                $_SESSION['liste'][] = [$nom_user, $publication, $filename];
+                $_SESSION['liste'][] = [$_SESSION['statut'][1], $publication, $filename];
                 $date = date('Y-m-d H:i:s');
-                $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>$nom_user</b><br>Publication : <b>$publication</b><br>Image : <br><img src=\"src/classes/action/image/$filename$extension\" style=\"max-height: 200px;max-width: 200px;\"><br>Date à laquelle vous avez posté : <b>$date</b></div>";
+                $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>{$_SESSION['statut'][1]}</b><br>Publication : <b>$publication</b><br>Image : <br><img src=\"src/classes/action/image/$filename$extension\" style=\"max-height: 200px;max-width: 200px;\"><br>Date à laquelle vous avez posté : <b>$date</b></div>";
 
             } else {
                 
-                $_SESSION['liste'][] = [$nom_user, $publication];
+                $_SESSION['liste'][] = [$_SESSION['statut'][1], $publication];
                 $date = date('Y-m-d H:i:s');
-                $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>$nom_user</b><br>Publication : <b>$publication</b><br>Date à laquelle vous avez posté : <b>$date</b></div>";
+                $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>{$_SESSION['statut'][1]}</b><br>Publication : <b>$publication</b><br>Date à laquelle vous avez posté : <b>$date</b></div>";
 
             }
 

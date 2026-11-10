@@ -54,7 +54,7 @@ class Dispatcher {
                 <title>Touiteur.app</title>
             </head>
             <body>
-                <h1>Touiteur</h1>
+                <h1>Touiteur .main</h1>
 
                 <nav>
                     {$creer}

@@ -4,7 +4,8 @@ declare(strict_types=1);
 session_start();
 
 require_once 'vendor/autoload.php';
-
+use iutnc\touiteur\repository\TouiteurRepository;
+TouiteurRepository::setConfig('config_db.ini');
 use \iutnc\touiteur\dispatch\Dispatcher;
 use \iutnc\touiteur\action as act;
 

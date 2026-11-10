@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 namespace iutnc\touiteur\action;
+use \iutnc\touiteur\repository\TouiteurRepository;
 
 class AddSignUpAction extends Action {
 
@@ -54,6 +55,8 @@ class AddSignUpAction extends Action {
                 $_SESSION['statut']['nom_user'] = $nom_user;
                 $_SESSION['statut']['prenom_user'] = $prenom_user;
                 $_SESSION['statut']['email_user'] = $email_user;
+                $repo = TouiteurRepository::getInstance();
+                $id_uti = $repo->saveUtilisateur($nom_user, $prenom_user, $email_user);
 
             } else if ($_SESSION['statut']['loggedin'] === true) {
 

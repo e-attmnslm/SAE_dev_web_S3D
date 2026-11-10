@@ -97,48 +97,64 @@ references tags(id_tag));
 
 
 -------- A REVOIR--------
---une liste de touites qu’il a publiée
+--une liste de touites qu’il a publiée 
 select t.id_touite, t.TEXTE from UTILISATEUR u 
     inner join touite t on t.id_uti = u.ID_UTI 
     Where u.id_uti = 1;
 
 --une liste de touites des utilisateurs suivis
-select t.id_touite, t.TEXTE from SUIVRE s 
-    inner join UTILISATEUR u on s.UTI_SUIVI = u.ID_UTI
-    inner join touite t on t.id_uti = u.ID_UTI
-    Where s.uti_suiveur = 1;
+SELECT t.id_touite, t.texte 
+    FROM suivre s 
+    INNER JOIN touite t ON t.id_uti = s.uti_suivi
+    WHERE s.uti_suiveur = 1;
 
 --une liste de touites par tag donné
-select t.id_touite, t.TEXTE from APPARTIENTTAG ats
-    inner join touite t on t.ID_TOUITE = ats.ID_TOUITE
-    Where t.ID_UTI =1 and ats.id_tag = 2 ;
+SELECT t.id_touite, t.texte 
+    FROM appartienttag ats
+    INNER JOIN touite t ON t.id_touite = ats.id_touite
+    WHERE ats.id_tag = 2;
 -------- A REVOIR--------
 
 
 -- Mettre à jour le nombre de touites d’un utilisateur lorsqu’un touite est créé.
+CREATE OR REPLACE PROCEDURE updateTouite(uti NUMBER) IS
+    nbt NUMBER;
+    trouver NUMBER;
+BEGIN
 
-CREATE OR REPLACE PROCEDURE updateTouite( uti number)
-    is
-    nbt number ;
-    begin
+    SELECT COUNT(*) INTO trouver 
+    FROM utilisateur 
+    WHERE id_uti = uti;
 
-    select count(*)as nombre_touite into nbt from UTILISATEUR u 
-        inner join touite t on t.id_uti = u.ID_UTI 
-        where u.id_uti= uti
-        group by u.id_uti;
-
-
-    update utilisateur set NBTOUITE= nbt where ID_UTI = uti;   
-    dbms_output.put_line(' le nouvveau nombre de touite l''utilisateur '|| uti ||  ':'
-    ||nbt);
-
-    exception
-    when NO_DATA_FOUND then
-    dbms_output.put_line('l''utilisateur n''existe pas : '
-    ||uti);
-    END updateTouite;
+    IF trouver = 0 THEN
+        -- Si l'utilisateur n'existe pas 
+        RAISE NO_DATA_FOUND;
+    END IF;
 
 
+    SELECT COUNT(*) INTO nbt 
+    FROM touite 
+    WHERE id_uti = uti;
+
+
+    UPDATE utilisateur 
+    SET nbtouite = nbt 
+    WHERE id_uti = uti; 
+
+    DBMS_OUTPUT.PUT_LINE('Le nouveau nombre de touites de l''utilisateur ' || uti || ' : ' || nbt);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('L''utilisateur '|| uti|| ' n''existe pas' );
+END updateTouite;
+/
+
+select * from touite;
+
+declare
+begin
+UPDATETOUITE(3);
+end;
 
 
 --Un utilisateur ne peut pas se suivre lui-même ou suivre un utilisateur ayant le même email.
@@ -160,14 +176,14 @@ CREATE OR REPLACE FUNCTION SuivreUti( suiveur number, suivi number) RETURN boole
     select mail into mail_suivi from utilisateur where ID_UTI = suivi;
 
     if mail_suiveur = mail_suivi then 
-        dbms_output.put_line('l''utilisateur ne pas se suivre un utilisateur avec le meme mail');
+        dbms_output.put_line('l''utilisateur ne peut pas se suivre un utilisateur avec le meme mail');
         return false;
     end if;
 
     select count(*) into possible from suivre where UTI_SUIVEUR=suiveur and uti_suivi= suivi;
 
     if possible !=0 then 
-        dbms_output.put_line('il suit deja le l''utilisteur');
+        dbms_output.put_line('il suit deja l''utilisateur');
         return false;
     else 
         insert into SUIVRE(UTI_SUIVEUR,UTI_SUIVI) values (suiveur,suivi);
@@ -180,6 +196,7 @@ CREATE OR REPLACE FUNCTION SuivreUti( suiveur number, suivi number) RETURN boole
 exception
 when NO_DATA_FOUND then
 dbms_output.put_line('un des utilisateur n''existe pas');
+return false;
 
 END SuivreUti;
 

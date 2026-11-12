@@ -50,7 +50,7 @@ class Dispatcher {
                 <title>Touiteur.app</title>
             </head>
             <body>
-                <h1>Touiteur .Mabranche</h1>
+                <h1>Touiteur .gestion_Comptes</h1>
                 <nav>
                     {$creer}
                     {$connexion}

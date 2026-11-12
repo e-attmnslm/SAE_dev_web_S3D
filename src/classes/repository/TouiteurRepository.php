@@ -9,17 +9,15 @@ class TouiteurRepository
     private static ?TouiteurRepository $instance = null;
     private static array $config = [];
 
-    private function __construct(array $conf) {
+private function __construct(array $conf) {
         $dsn = "{$conf['driver']}:host={$conf['host']};dbname={$conf['database']};charset=utf8mb4";
         try {
             $this->pdo = new \PDO($dsn, $conf['user'], $conf['pass'], [
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_EMULATE_PREPARES => false,
             ]);
-            // Test de connexion réussi
-            // echo "Connexion à la BDD réussie !";
         } catch (\PDOException $e) {
-            // Affichage de l'erreur exacte si la connexion échoue
+            // On stoppe tout en lançant une exception si la connexion échoue
             throw new \Exception("Erreur de connexion à la base de données : " . $e->getMessage());
         }
     }

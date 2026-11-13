@@ -112,7 +112,7 @@ private function __construct(array $conf) {
      * Récupère les touites d'un utilisateur spécifique (Fonctionnalité 4)
      */
     public function getTouitesByUser(int $id_uti): array {
-        $query = "SELECT t.*, u.nom, u.prenom, i.chemin 
+        $query = "SELECT t.*, u.nom, u.prenom, i.chemin AS image_path
                   FROM touite t 
                   JOIN utilisateur u ON t.id_uti = u.id_uti 
                   LEFT JOIN image i ON t.id_img = i.id_img 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace iutnc\touiteur\action;
 
 use iutnc\touiteur\repository\TouiteurRepository;
+use iutnc\touiteur\render\TouiteMessageRender;
 
 class DefaultAction extends Action {
 
@@ -30,20 +31,15 @@ class DefaultAction extends Action {
             $html .= "<div style=\"border: 1px solid #ccc; margin: 10px 0; padding: 15px;\">";
             
             // Auteur + Bouton pour s'abonner à cet utilisateur
-            $html .= "<p>Par <b>{$t['prenom']} {$t['nom']}</b>";
+            $html .= "<p>Par <a href=\"?action=user-touites&amp;id={$t['id_uti']}\"><b>{$t['prenom']} {$t['nom']}</b></a>";
             if (isset($_SESSION['statut']['id_uti']) && $_SESSION['statut']['id_uti'] != $t['id_uti']) {
                 $html .= " <a href=\"?action=subscribe&id_suivi={$t['id_uti']}\" style=\"font-size: small; background: #eee; padding: 2px 6px; text-decoration: none; border-radius: 3px;\">+ S'abonner</a>";
             }
             $html .= " le {$t['date_public']}</p>";
 
-            // Texte du touite (avec transformation des #hashtags si tu veux les rendre cliquables directement)
-            $texteFormate = preg_replace('/#([a-zA-Z0-9_]+)/', '<a href="?action=tag-touites&libelle=$1">#$1</a>', $t['texte']);
-            $html .= "<p>{$texteFormate}</p>";
-            
-            // Image éventuelle
-            if (!empty($t['image_path'])) {
-                $html .= "<img src=\"{$t['image_path']}\" style=\"max-height: 200px; max-width: 200px;\"><br>";
-            }
+            // Texte court du touite avec les hashtags cliquables.
+            $texteFormate = TouiteMessageRender::render($t['texte'], true, $t['image_path'] ?? null);
+            $html .= "<div>{$texteFormate}</div>";
 
             // Tags associés (si gérés via un tableau séparé)
             if (!empty($t['tags'])) {

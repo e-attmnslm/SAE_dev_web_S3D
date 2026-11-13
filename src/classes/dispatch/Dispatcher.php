@@ -53,6 +53,12 @@ class Dispatcher {
             <head>
                 <meta charset="utf-8">
                 <title>Touiteur.app</title>
+                <style>
+                    .touite-message:not([open]) .touite-full,
+                    .touite-message[open] .touite-short {
+                        display: none;
+                    }
+                </style>
             </head>
             <body>
                 <h1>Touiteur .main</h1>

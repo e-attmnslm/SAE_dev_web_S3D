@@ -30,56 +30,54 @@ class Dispatcher {
 
     private function renderPage(string $html): void
     {
-        // Initialisation par défaut pour éviter les warnings
-        $creer = "";
-        $connexion = "";
-        $publier = "";
-        $statut = "";
+        $creer = '';
+        $connexion = '';
+        $publier = '';
+        $statut = '';
 
-        if (isset($_SESSION['statut'])) {
-            if ($_SESSION['statut']['loggedin'] === true) {
-                $statut = " | <a href=\"?action=signout\">Déconnecter</a>";
-                $publier = " | <a href=\"?action=publish-touite\">Publier</a>";
-                $influenceurs = " | <a href=\"?action=liste-influenceurs\">Liste des influenceurs</a>";
-            if ($_SESSION['statut']['loggedin'] === false) {
-                $creer = "<a href=\"?action=signup\">Créer un compte</a> | ";
-                $connexion = "<a href=\"?action=login\">Connexion</a> |";
-            }
+        $isLoggedIn = isset($_SESSION['statut']['loggedin'])
+            && $_SESSION['statut']['loggedin'] === true;
+
+        if ($isLoggedIn) {
+            $statut = '<a href="?action=signout">Déconnecter</a>';
+            $publier = '<a href="?action=publish-touite">Publier</a>';
+            $influenceurs = '<a href="?action=liste-influenceurs">Liste des influenceurs</a>';
+        } else {
+            $creer = '<a href="?action=signup">Créer un compte</a>';
+            $connexion = '<a href="?action=login">Connexion</a>';
+            $influenceurs = '';
         }
-        
+
         echo <<<HTML
-            <!doctype html>
-            <html lang="fr">
-            <head>
-                <meta charset="utf-8">
-                <title>Touiteur.app</title>
-                <style>
-                    .touite-message:not([open]) .touite-full,
-                    .touite-message[open] .touite-short {
-                        display: none;
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>Touiteur .main</h1>
-
-                <nav>
-                    {$creer}
-                    {$connexion}
-                    <a href="?action=default">Accueil</a> |
-                    <a href="?action=mur">Mur</a>
-                    {$publier}
-                    {$influenceurs}
-                    {$statut}
-                </nav>
-
-                <main>
-                    {$html}
-                </main>
-            </body>
-            </html>
-            HTML;
-        }
+        <!doctype html>
+        <html lang="fr">
+        <head>
+            <meta charset="utf-8">
+            <title>Touiteur.app</title>
+            <style>
+                .touite-message:not(.open) .touite-full,
+                .touite-message.open .touite-short {
+                    display: none;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Touiteur .main</h1>
+            <nav>
+                $creer
+                $connexion
+                <a href="?action=default">Accueil</a>
+                <a href="?action=mur">Mur</a>
+                $publier
+                $influenceurs
+                $statut
+            </nav>
+            <main>
+                $html
+            </main>
+        </body>
+        </html>
+        HTML;
     }
 }
 

@@ -14,21 +14,24 @@ class TagTouitesAction extends Action {
 
         $repo = TouiteurRepository::getInstance();
         
-        // (Optionnel) Récupérer le nom du tag pour l'affichage
-        // $nomTag = $repo->getNomTag((int)$idTag);
-
         $html = "<h2>Touites pour le tag #{$idTag}</h2>";
 
-        // Bouton pour s'abonner au tag si l'utilisateur est connecté
-        if (isset($_SESSION['statut']['loggedin']) && $_SESSION['statut']['loggedin'] === true) {
+        // Bouton dynamique S'abonner / Se désabonner au tag si l'utilisateur est connecté
+        if (isset($_SESSION['statut']['id_uti'])) {
+            $idUti = $_SESSION['statut']['id_uti'];
+            $estAbonneTag = $repo->estAbonneTag($idUti, (int)$idTag);
+
             $html .= "<div style=\"margin-bottom: 20px;\">";
-            $html .= "<a href=\"?action=subscribe&id_tag={$idTag}\" style=\"background: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px;\">";
-            $html .= "S'abonner à ce tag";
+            if ($estAbonneTag) {
+                $html .= "<a href=\"?action=subscribe&id_tag={$idTag}\" style=\"background: #dc3545; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px;\">Se désabonner de ce tag</a>";
+            } else {
+                $html .= "<a href=\"?action=subscribe&id_tag={$idTag}\" style=\"background: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px;\">S'abonner à ce tag</a>";
+            }
             $html .= "</a>";
             $html .= "</div>";
         }
 
-        // Récupération et affichage des touites du tag...
+        // Récupération et affichage des touites du tag
         $touites = $repo->getTouitesByTag((int)$idTag);
         foreach ($touites as $t) {
             $html .= "<div style=\"border: 1px solid #ccc; margin: 10px; padding: 10px;\">";

@@ -14,27 +14,30 @@ class SuivreUtiAction extends Action {
         $idUti = $_SESSION['statut']['id_uti'];
         $repo = TouiteurRepository::getInstance();
 
-        // Si on veut suivre un utilisateur
+        // Si on clique pour un utilisateur
         if (isset($_GET['id_suivi'])) {
             $idSuivi = (int) $_GET['id_suivi'];
-            if ($idSuivi !== $idUti) { // Empêcher de se suivre soi-même
-                $repo->suivreUtilisateur($idUti, $idSuivi);
+            if ($idSuivi !== $idUti) {
+                if ($repo->estAbonneUti($idUti, $idSuivi)) {
+                    $repo->seDesabonnerUti($idUti, $idSuivi);
+                } else {
+                    $repo->suivreUtilisateur($idUti, $idSuivi);
+                }
             }
         }
 
-        // Si on veut suivre un tag
+        // Si on clique pour un tag
         if (isset($_GET['id_tag'])) {
             $idTag = (int) $_GET['id_tag'];
-            $repo->suivreTag($idUti, $idTag);
-        }
-        // Si on veut suivre un tag
-        if (isset($_GET['id_tag'])) {
-            $idTag = (int) $_GET['id_tag'];
-            $repo->suivreTag($idUti, $idTag);
+            if ($repo->estAbonneTag($idUti, $idTag)) {
+                $repo->seDesabonnerTag($idUti, $idTag);
+            } else {
+                $repo->suivreTag($idUti, $idTag);
+            }
         }
 
-        // Redirection vers le mur ou la page précédente
-        header('Location: ?action=mur');
+        $redirect = $_SERVER['HTTP_REFERER'] ?? '?action=mur';
+        header("Location: $redirect");
         exit();
     }
 }

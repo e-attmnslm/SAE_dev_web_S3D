@@ -19,7 +19,7 @@ if (!isset($_SESSION['statut'])) {
 if (!isset($_SESSION['compte'])) {
     $_SESSION['compte'] = [];
 }
-
+ 
 $app = (new Dispatcher())
     ->addRoute('default', act\DefaultAction::class)
     ->addRoute('publish-touite', act\AddPublishAction::class)

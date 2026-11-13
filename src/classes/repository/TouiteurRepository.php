@@ -236,5 +236,40 @@ private function __construct(array $conf) {
     ]);
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 }
+    // Pour vérifier si on suit un utilisateur
+public function estAbonneUti(int $idUti, int $idSuivi): bool {
+    $query = "SELECT COUNT(*) FROM Suivre WHERE uti_suiveur = :uti AND uti_suivi = :suivi";
+    $stmt = $this->pdo->prepare($query);
+    $stmt->execute(['uti' => $idUti, 'suivi' => $idSuivi]);
+    return $stmt->fetchColumn() > 0;
+}
+
+// Pour vérifier si on suit un tag
+public function estAbonneTag(int $idUti, int $idTag): bool {
+    $query = "SELECT COUNT(*) FROM AbonneTag WHERE id_uti = :uti AND id_tag = :tag";
+    $stmt = $this->pdo->prepare($query);
+    $stmt->execute(['uti' => $idUti, 'tag' => $idTag]);
+    return $stmt->fetchColumn() > 0;
+}
+
+    // Supprimer l'abonnement à un utilisateur
+public function seDesabonnerUti(int $idUti, int $idSuivi): void {
+    $query = "DELETE FROM Suivre WHERE uti_suiveur = :uti AND uti_suivi = :suivi";
+    $stmt = $this->pdo->prepare($query);
+    $stmt->execute([
+        'uti' => $idUti,
+        'suivi' => $idSuivi
+    ]);
+}
+
+// Supprimer l'abonnement à un tag
+public function seDesabonnerTag(int $idUti, int $idTag): void {
+    $query = "DELETE FROM AbonneTag WHERE id_uti = :uti AND id_tag = :tag";
+    $stmt = $this->pdo->prepare($query);
+    $stmt->execute([
+        'uti' => $idUti,
+        'tag' => $idTag
+    ]);
+}
    
 }

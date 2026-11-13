@@ -29,23 +29,28 @@ class DefaultAction extends Action {
         foreach ($touites as $t) {
             $html .= "<div style=\"border: 1px solid #ccc; margin: 10px 0; padding: 15px;\">";
             
-            // Auteur + Bouton pour s'abonner à cet utilisateur
+            // Auteur + Bouton dynamique pour s'abonner / se désabonner de l'utilisateur
             $html .= "<p>Par <b>{$t['prenom']} {$t['nom']}</b>";
             if (isset($_SESSION['statut']['id_uti']) && $_SESSION['statut']['id_uti'] != $t['id_uti']) {
-                $html .= " <a href=\"?action=subscribe&id_suivi={$t['id_uti']}\" style=\"font-size: small; background: #eee; padding: 2px 6px; text-decoration: none; border-radius: 3px;\">+ S'abonner</a>";
+                $idUti = $_SESSION['statut']['id_uti'];
+                $estAbonne = $repo->estAbonneUti($idUti, $t['id_uti']);
+
+                if ($estAbonne) {
+                    $html .= " <a href=\"?action=subscribe&id_suivi={$t['id_uti']}\" style=\"font-size: small; background: #ffcccc; padding: 2px 6px; text-decoration: none; border-radius: 3px;\">- Se désabonner</a>";
+                } else {
+                    $html .= " <a href=\"?action=subscribe&id_suivi={$t['id_uti']}\" style=\"font-size: small; background: #eee; padding: 2px 6px; text-decoration: none; border-radius: 3px;\">+ S'abonner</a>";
+                }
             }
             $html .= " le {$t['date_public']}</p>";
 
-            // Texte du touite (avec transformation des #hashtags si tu veux les rendre cliquables directement)
-            $texteFormate = preg_replace('/#([a-zA-Z0-9_]+)/', '<a href="?action=tag-touites&libelle=$1">#$1</a>', $t['texte']);
-            $html .= "<p>{$texteFormate}</p>";
-            
+            // Affichage direct du texte brut sans hyperlien sur les hashtags
+            $html .= "<p>{$t['texte']}</p>";
             // Image éventuelle
             if (!empty($t['image_path'])) {
                 $html .= "<img src=\"{$t['image_path']}\" style=\"max-height: 200px; max-width: 200px;\"><br>";
             }
 
-            // Tags associés (si gérés via un tableau séparé)
+            // Tags associés
             if (!empty($t['tags'])) {
                 $html .= "<p style=\"margin-top: 5px;\">";
                 foreach ($t['tags'] as $tag) {

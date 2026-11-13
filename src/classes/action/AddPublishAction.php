@@ -32,91 +32,65 @@ class AddPublishAction extends Action {
             FIN;
         } else {
             // POST : traiter le formulaire
-            //$nom_user = filter_var($_POST['nom_user'], FILTER_SANITIZE_SPECIAL_CHARS);
-            
             $publication = filter_var($_POST['publication'], FILTER_SANITIZE_SPECIAL_CHARS);
+            $filename = null;
+            $extension = null;
+            $cheminImage = null;
 
-            if (isset($_FILES['inputfile']) && $_FILES['inputfile']['error'] !== UPLOAD_ERR_NO_FILE) {
-
-                if ($_FILES['inputfile']['error'] === UPLOAD_ERR_OK) {
-
+            $idImg = null;
+            $repo = \iutnc\touiteur\repository\TouiteurRepository::getInstance();
+            if (isset($_FILES['inputfile']) && $_FILES['inputfile']['error'] === UPLOAD_ERR_OK) {
                 $tmp = $_FILES['inputfile']['tmp_name'];
                 $type = $_FILES['inputfile']['type'];
 
                 if ($type === 'image/png' || $type === 'image/jpeg') {
-
                     $upload_dir = __DIR__ . '/image/';
-                    $filename = uniqid();
-
-                    if ($type === 'image/png') {
-                        $extension = '.png';
-                    } else {
-                        $extension = '.jpg';
+                    if (!is_dir($upload_dir)) {
+                        mkdir($upload_dir, 0777, true);
                     }
-
-                    $dest = $upload_dir.$filename.$extension;
+                    $filename = uniqid();
+                    $extension = ($type === 'image/png') ? '.png' : '.jpg';
+                    $dest = $upload_dir . $filename . $extension;
 
                     if (move_uploaded_file($tmp, $dest)) {
-                        $html .= "Image enregistrée avec succès<br>";
-                    } else {
-                        $html .= "Impossible d'enregistrer l'image<br>";
-                    }
-
-                    } else {
-                        $html .= "Echec du téléchargement ou type non autorisé<br>";
+                        $cheminImage = 'src/classes/action/image/' . $filename . $extension;
+                        
+                        // Enregistrement de l'image dans sa table et récupération de son ID
+                        $idImg = $repo->saveImage($cheminImage);
                     }
                 }
-
-                $_SESSION['liste'][] = [$_SESSION['statut']['email_user'], $publication, $filename];
-                $date = date('Y-m-d H:i:s');
-                $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>{$_SESSION['statut'][1]}</b><br>Publication : <b>$publication</b><br>Image : <br><img src=\"src/classes/action/image/$filename$extension\" style=\"max-height: 200px;max-width: 200px;\"><br>Date à laquelle vous avez posté : <b>$date</b></div>";
-
-            } else {
-                
-                $_SESSION['liste'][] = [$_SESSION['statut']['email_user'], $publication];
-                $date = date('Y-m-d H:i:s');
-                $msg = "<div style=\"border: solid;display: inline-block;padding: 5px;\">Publication postée avec succès avec nom d'utilisateur : <b>{$_SESSION['statut'][1]}</b><br>Publication : <b>$publication</b><br>Date à laquelle vous avez posté : <b>$date</b></div>";
-
             }
 
-            $_SESSION['touites'] = $msg;
+            
+            // 1. Enregistrement en base de données via le Repository
+            
+            $idUti = $_SESSION['statut']['id_uti'];
+            $idTouite = $repo->saveTouite($publication, $idUti, $idImg);
 
-            // GESTION DES TAGS
-            if (!isset($_SESSION['tags'])) {
-                $_SESSION['tags'] = [];
-            }
-
-            $z = 0;
-            while ($z < count($_SESSION['liste'])) {
-                if (str_contains($_SESSION['liste'][$z][1], '#')) {
-                    $tab = mb_str_split($_SESSION['liste'][$z][1]);
-                    $tab[] = ' ';
-                    $i = 0;
-                    while ($i < count($tab)-1) {
-                        if ($tab[$i] === '#') {
-                            $str = '';
-                            while (($tab[$i] != ' ') && ($i < count($tab))) {
-                                $str .= $tab[$i];
-                                $i++;
-                            }
-                            $j = 0;
-                            $verif = false;
-                            while ($j < count($_SESSION['tags'])) {
-                                if ($_SESSION['tags'][$j] === $str) {
-                                    $verif = true;
-                                }
-                                $j++;
-                            }
-                            if ($verif === false) {
-                                $_SESSION['tags'][] = $str;
-                            }
+            // 2. Conserve ton système de tags initial mais en l'adaptant pour insérer en base
+            if (str_contains($publication, '#')) {
+                $tab = mb_str_split($publication);
+                $tab[] = ' ';
+                $i = 0;
+                while ($i < count($tab) - 1) {
+                    if ($tab[$i] === '#') {
+                        $str = '';
+                        while (($tab[$i] != ' ') && ($i < count($tab))) {
+                            $str .= $tab[$i];
+                            $i++;
                         }
-                        $i++;
+                        // On enlève le '#' pour garder juste le libellé du tag
+                        $libelleTag = ltrim($str, '#');
+                        if (!empty($libelleTag)) {
+                            $idTag = $repo->getOrCreateTag($libelleTag);
+                            $repo->linkTouiteTag($idTouite, $idTag);
+                        }
                     }
+                    $i++;
                 }
-                $z++;
             }
-            header("Location: ?action=publish-touite");
+
+            header("Location: ?action=default");
             exit();
         }
         return $html;

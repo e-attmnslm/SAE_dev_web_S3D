@@ -3,25 +3,63 @@ declare(strict_types=1);
 
 namespace iutnc\touiteur\action;
 
+use iutnc\touiteur\repository\TouiteurRepository;
+
 class DefaultAction extends Action {
 
     public function execute() : string {
-        $html = '';
-        $html .= var_dump($_SESSION);
-        
-        // CREATIONN TABLEAU STATUT (pour savoir si l'utilisateur est connecté)
+        // Initialisation des sessions si besoin
         if (!isset($_SESSION['statut'])) {
             $_SESSION['statut']['loggedin'] = false;
         }
-
-        // CREATION TABLEAU COMPTE (pour lister l'ensemble des compte existants)
         if (!isset($_SESSION['compte'])) {
-                $_SESSION['compte'] = [];
+            $_SESSION['compte'] = [];
+        }
+
+        // Affichage du fil d'actualité
+        $repo = TouiteurRepository::getInstance();
+        $touites = $repo->getAllTouites();
+
+        $html = "<h2>Fil d'actualité</h2>";
+        if (empty($touites)) {
+            $html .= "<p>Aucun touite pour le moment.</p>";
+            return $html;
+        }
+
+        foreach ($touites as $t) {
+            $html .= "<div style=\"border: 1px solid #ccc; margin: 10px 0; padding: 15px;\">";
+            
+            // Auteur + Bouton pour s'abonner à cet utilisateur
+            $html .= "<p>Par <b>{$t['prenom']} {$t['nom']}</b>";
+            if (isset($_SESSION['statut']['id_uti']) && $_SESSION['statut']['id_uti'] != $t['id_uti']) {
+                $html .= " <a href=\"?action=subscribe&id_suivi={$t['id_uti']}\" style=\"font-size: small; background: #eee; padding: 2px 6px; text-decoration: none; border-radius: 3px;\">+ S'abonner</a>";
+            }
+            $html .= " le {$t['date_public']}</p>";
+
+            // Texte du touite (avec transformation des #hashtags si tu veux les rendre cliquables directement)
+            $texteFormate = preg_replace('/#([a-zA-Z0-9_]+)/', '<a href="?action=tag-touites&libelle=$1">#$1</a>', $t['texte']);
+            $html .= "<p>{$texteFormate}</p>";
+            
+            // Image éventuelle
+            if (!empty($t['image_path'])) {
+                $html .= "<img src=\"{$t['image_path']}\" style=\"max-height: 200px; max-width: 200px;\"><br>";
+            }
+
+            // Tags associés (si gérés via un tableau séparé)
+            if (!empty($t['tags'])) {
+                $html .= "<p style=\"margin-top: 5px;\">";
+                foreach ($t['tags'] as $tag) {
+                    $html .= "<a href=\"?action=tag-touites&id_tag={$tag['id_tag']}\" style=\"text-decoration: none; background: #eef; padding: 2px 5px; margin-right: 5px; border-radius: 3px;\">";
+                    $html .= "#{$tag['libelle']}";
+                    $html .= "</a>";
+                }
+                $html .= "</p>";
+            }
+
+            // Fermeture propre du bloc de chaque touite
+            $html .= "</div>"; 
         }
 
         return $html;
     }
-    
 }
-
-?>

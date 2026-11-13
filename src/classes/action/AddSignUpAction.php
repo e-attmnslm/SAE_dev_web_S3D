@@ -50,13 +50,15 @@ class AddSignUpAction extends Action {
 
                 $html .= "<p>Compte créé avec succès :<br>Nom : <b>$nom_user</b><br>Prénom : <b>$prenom_user</b><br>Email : <b>$email_user</b></p>
                           <p>Vous avez été automatiquement connecté à votre compte</p>";
-
-                $_SESSION['statut']['loggedin'] = true;
-                $_SESSION['statut']['nom_user'] = $nom_user;
-                $_SESSION['statut']['prenom_user'] = $prenom_user;
-                $_SESSION['statut']['email_user'] = $email_user;
                 $repo = TouiteurRepository::getInstance();
                 $id_uti = $repo->saveUtilisateur($nom_user, $prenom_user, $email_user);
+                $_SESSION['statut']['loggedin'] = true;
+                $_SESSION['statut']['nom_user'] = $nom_user;
+                $_SESSION['statut']['id_uti'] = $id_uti;
+                $_SESSION['statut']['prenom_user'] = $prenom_user;
+                $_SESSION['statut']['email_user'] = $email_user;
+                
+                
 
             } else if ($_SESSION['statut']['loggedin'] === true) {
 

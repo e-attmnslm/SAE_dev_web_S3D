@@ -29,7 +29,8 @@ $app = (new Dispatcher())
     ->addRoute('tag-touites', act\TagTouitesAction::class)
     ->addRoute('user-touites', act\UserTouitesAction::class)
     ->addRoute('mur', act\MurAction::class)          // Route pour afficher le mur personnalisé
-    ->addRoute('subscribe', act\SuivreUtiAction::class); // Route pour traiter l'abonnement (utilisateurs / tags)
+    ->addRoute('subscribe', act\SuivreUtiAction::class) // Route pour traiter l'abonnement (utilisateurs / tags)
+    ->addRoute('liste-influenceurs', act\AddListeInfluenceursAction::class);
 try {
     $app->run();
 } catch (\Exception $e) {

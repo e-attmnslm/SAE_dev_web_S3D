@@ -271,5 +271,17 @@ public function seDesabonnerTag(int $idUti, int $idTag): void {
         'tag' => $idTag
     ]);
 }
+
+public function getListeInfluenceurs(): array
+    {
+        $query = "SELECT u.id_uti, u.nom, u.prenom, COUNT(s.uti_suiveur) AS nb_suiveurs
+                FROM utilisateur u
+                LEFT JOIN Suivre s ON u.id_uti = s.uti_suivi
+                GROUP BY u.id_uti, u.nom, u.prenom
+                ORDER BY nb_suiveurs ASC";
+
+        $stmt = $this->pdo->query($query);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
    
 }

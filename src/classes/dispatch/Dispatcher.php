@@ -40,7 +40,7 @@ class Dispatcher {
             if ($_SESSION['statut']['loggedin'] === true) {
                 $statut = " | <a href=\"?action=signout\">Déconnecter</a>";
                 $publier = " | <a href=\"?action=publish-touite\">Publier</a>";
-            }
+                $influenceurs = " | <a href=\"?action=liste-influenceurs\">Liste des influenceurs</a>";
             if ($_SESSION['statut']['loggedin'] === false) {
                 $creer = "<a href=\"?action=signup\">Créer un compte</a> | ";
                 $connexion = "<a href=\"?action=login\">Connexion</a> |";
@@ -69,6 +69,7 @@ class Dispatcher {
                     <a href="?action=default">Accueil</a> |
                     <a href="?action=mur">Mur</a>
                     {$publier}
+                    {$influenceurs}
                     {$statut}
                 </nav>
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace iutnc\touiteur\action;
 
 use iutnc\touiteur\repository\TouiteurRepository;
+use iutnc\touiteur\render\TouiteMessageRender;
 
 class DefaultAction extends Action {
 
@@ -31,6 +32,8 @@ class DefaultAction extends Action {
             
             // Auteur + Bouton dynamique pour s'abonner / se désabonner de l'utilisateur
             $html .= "<p>Par <b>{$t['prenom']} {$t['nom']}</b>";
+            // Auteur + Bouton pour s'abonner à cet utilisateur
+            $html .= "<p>Par <a href=\"?action=user-touites&amp;id={$t['id_uti']}\"><b>{$t['prenom']} {$t['nom']}</b></a>";
             if (isset($_SESSION['statut']['id_uti']) && $_SESSION['statut']['id_uti'] != $t['id_uti']) {
                 $idUti = $_SESSION['statut']['id_uti'];
                 $estAbonne = $repo->estAbonneUti($idUti, $t['id_uti']);
@@ -43,13 +46,12 @@ class DefaultAction extends Action {
             }
             $html .= " le {$t['date_public']}</p>";
 
-            // Affichage direct du texte brut sans hyperlien sur les hashtags
-            $html .= "<p>{$t['texte']}</p>";
-            // Image éventuelle
-            if (!empty($t['image_path'])) {
-                $html .= "<img src=\"{$t['image_path']}\" style=\"max-height: 200px; max-width: 200px;\"><br>";
-            }
-
+            
+            
+            // Texte court du touite avec les hashtags cliquables.
+            $texteFormate = TouiteMessageRender::render($t['texte'], true, $t['image_path'] ?? null);
+            $html .= "<div>{$texteFormate}</div>";
+            
             // Tags associés
             if (!empty($t['tags'])) {
                 $html .= "<p style=\"margin-top: 5px;\">";

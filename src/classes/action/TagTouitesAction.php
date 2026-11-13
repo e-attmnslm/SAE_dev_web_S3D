@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace iutnc\touiteur\action;
 
 use iutnc\touiteur\repository\TouiteurRepository;
+use iutnc\touiteur\render\TouiteMessageRender;
 
 class TagTouitesAction extends Action {
     public function execute() : string {
@@ -35,8 +36,8 @@ class TagTouitesAction extends Action {
         $touites = $repo->getTouitesByTag((int)$idTag);
         foreach ($touites as $t) {
             $html .= "<div style=\"border: 1px solid #ccc; margin: 10px; padding: 10px;\">";
-            $html .= "<p>Par <b>{$t['prenom']} {$t['nom']}</b> le {$t['date_public']}</p>";
-            $html .= "<p>{$t['texte']}</p>";
+            $html .= "<p>Par <a href=\"?action=user-touites&amp;id={$t['id_uti']}\"><b>{$t['prenom']} {$t['nom']}</b></a> le {$t['date_public']}</p>";
+            $html .= '<div>' . TouiteMessageRender::render($t['texte'], true) . '</div>';
             $html .= "</div>";
         }
 

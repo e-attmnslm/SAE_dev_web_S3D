@@ -79,6 +79,7 @@ class Dispatcher {
             </body>
             </html>
             HTML;
+        }
     }
 }
 
